@@ -1,6 +1,11 @@
 package com.test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.openqa.selenium.By;
+import org.openqa.selenium.WindowType;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
@@ -10,32 +15,55 @@ public class Utility {
 	ChromeOptions opt;
 	
 	public void doActiuvity() throws InterruptedException {
+
+		boolean nextPage = driver.findElements(By.xpath("//a[@class='next ajax-page']")).isEmpty();
+		System.out.println("1st == "+nextPage);
 		
-		Thread.sleep(3000);
-		
-		int totalPeople = driver.findElements(By.xpath("(//a[@class='CoveoResultLink'])")).size();
-		int hasNext =5;
-		int x = 0;
-		do {
+		while (nextPage == false) { // True == Stop
+			System.out.println("2nd  == "+nextPage);
+			int totalBusiness = driver.findElements(By.xpath("//a[@class='business-name']")).size();
 			
-			x++;
 			
-			for (int i = 1; i <= totalPeople; i++) {
-				System.out.println("Emp Number: "+ i);
-				String name = driver.findElement(By.xpath("(//span[@class='CoveoFieldValue']/span)["+i+"]")).getText();
-				System.out.println("Emp Name is: "+ name);
+			ArrayList<String> links = new ArrayList<String>();
+			for (int i = 1; i <= totalBusiness; i++) {
 				
-				String url = driver.findElement(By.xpath("(//a[@class='CoveoResultLink'])["+i+"]")).getAttribute("href");
-				System.out.println("Profile Link is: "+ url);
+				String link = driver.findElement(By.xpath("(//a[@class='business-name'])["+i+"]")).getAttribute("href");
+				System.out.println(link);
+				links.add(link);
 			}
 			
-			driver.findElement(By.xpath("//li[contains(@class,'coveo-active')]/following-sibling::li[1]/a")).click();
+			for (int i = 0; i < links.size(); i++) {
+				
+				driver.switchTo().newWindow(WindowType.TAB);
+				Set<String> winHan = driver.getWindowHandles();
+				List<String> is = new ArrayList<String>(winHan);
+				driver.get(links.get(i));
+				
+				String name = driver.findElement(By.xpath("//h1[@class='dockable business-name']")).getText();
+				System.out.println("Buiness name: "+name);
+				
+				String phone = driver.findElement(By.xpath("//a[contains(@href,'tel:')]")).getText();
+				System.out.println("Phone Number is: "+phone);
+				
+				driver.close();
+				driver.switchTo().window(is.get(0));
+			}
 			
 			
-		} while (hasNext != x);
-		
-		
-		
+			
+			
+			
+			
+			nextPage = driver.findElements(By.xpath("//a[@class='next ajax-page']")).isEmpty();
+			System.out.println("After Next Page Check:   "+nextPage);
+			
+			try {
+				driver.findElement(By.xpath("//a[@class='next ajax-page']")).click();
+				Thread.sleep(5000);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
 		
 		
 	}
@@ -48,7 +76,7 @@ public class Utility {
 		driver = new ChromeDriver();
 		
 		driver.manage().window().maximize();
-		driver.get("https://www.lw.com/en/people#sort=%40peoplerankbytitle%20ascending%3B%40peoplelastname%20ascending");
+		driver.get("https://www.yellowpages.com/search?search_terms=gun+shop&geo_location_terms=Fresno%2C+CA");
 		
 		
 		
